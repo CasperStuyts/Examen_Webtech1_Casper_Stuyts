@@ -13,33 +13,29 @@ angular.module('movieApp', ['ngRoute'])
 
 	.controller('homeCtrl', ['personSearch', '$scope', function (personSearch, $scope) {
 		$('#searchButton').on('click', function (e) {
-    	personSearch.findPlayer().then(function(data) {
-            $scope.answer = data;
+    	personSearch.findPlayer().then(function($q) {
+            $scope.answer = $q;
         });
+			//console.log("hello")
     })
 
 }])
 	
-.service('personSearch', function ($http) {
+.service('personSearch', function ($http,$q) {
 
-    this.findPlayer = function() {
-    	var url = 'theimdbapi.org/api/find/person?name=steve+mcqueen'
-        $http({
-        method: 'GET',
-        url : url,
-            }).then(function successCallback(response) {
-            // this callback will be called asynchronously
-            // when the response is available
-            return response.data;
+    this.findPlayer = function(name) {
+    	var q = $q.defer();
+    	var url = 'theimdbapi.org/api/find/person?name='+encodeURIComponent(name)+'';
+    	$http.get(url)
+		.then(function(data){
+			q.resolve(data.filmography.actor);
+		}, function error(err) {
+			q.reject(err);
+		});
+		
+		return q.promise;
+	};
 
-            }, function errorCallback(response) {
-            // called asynchronously if an error occurs
-            // or server returns response with an error status.
-            return response;
+    });
 
-        });
-
-    };
-
-});	
    
